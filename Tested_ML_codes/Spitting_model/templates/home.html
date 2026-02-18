@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>S.A.H.A.R.A - Home</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    background: #f4f4f9;
+}
+h2, h3 {
+    margin-bottom: 10px;
+}
+#camera {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Popup styles - top right corner */
+.popup {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-size: 1em;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+.popup button {
+    display: block;
+    margin-top: 10px;
+    background: white;
+    color: #f44336;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+</style>
+</head>
+<body>
+
+<h2>S.A.H.A.R.A</h2>
+<h3>System for Active Human Accountability & Rapid Action</h3>
+<hr>
+
+<!-- Live webcam feed -->
+<img src="/video_feed" id="camera" />
+
+<!-- Top-right popup -->
+<div id="notification-popup" class="popup">
+    ⚠ Spitting Detected!
+    <button id="take-action-btn">Take Action</button>
+</div>
+
+<script>
+// References
+const popup = document.getElementById('notification-popup');
+const btn = document.getElementById('take-action-btn');
+
+// Redirect to control page when button clicked
+btn.onclick = () => window.location.href = '/control';
+
+// Poll Flask for spitting detection status
+function checkSpitting() {
+    fetch('/spitting_status')
+    .then(res => res.json())
+    .then(data => {
+        popup.style.display = data.spitting ? 'block' : 'none';
+    })
+    .catch(err => console.log(err));
+}
+
+// Check every 500ms
+setInterval(checkSpitting, 500);
+</script>
+
+</body>
+</html>

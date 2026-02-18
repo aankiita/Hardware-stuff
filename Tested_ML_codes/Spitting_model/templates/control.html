@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>S.A.H.A.R.A - Control</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f9;
+}
+h2, h3 {
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Split screen container */
+.container {
+    display: flex;
+    height: calc(100vh - 80px); /* leave space for heading */
+}
+
+/* Left: Video feed */
+.left {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #e9e9f0;
+    position: relative;
+}
+#camera {
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+#crosshair::before, #crosshair::after {
+    content: "";
+    position: absolute;
+    background: white;
+}
+#crosshair::before { top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%);}
+#crosshair::after { left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%);}
+
+/* Right: Buttons */
+.right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 30px;
+    gap: 30px; /* space between sections */
+}
+
+/* Control buttons */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* vertical space between rows */
+}
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* horizontal space between buttons */
+}
+button {
+    width: 120px;
+    height: 60px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: #0078d7;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+button:active { background: #000000; transform: scale(0.95);}
+.toggle { background: #d9534f;}
+.toggle.active { background: #5cb85c; }
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Responsive */
+@media(max-width: 800px){
+    .container { flex-direction: column; }
+    .left, .right { flex: none; width: 100%; height: 50vh; padding: 15px; }
+    button { width: 90px; height: 50px; font-size: 14px; }
+    .row { gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<h2>S.A.H.A.R.A</h2>
+<h3>System for Active Human Accountability & Rapid Action</h3>
+
+<div class="container">
+    <!-- Left: Video -->
+    <div class="left">
+        <img src="/video_feed" id="camera">
+        <div id="crosshair"></div>
+    </div>
+
+    <!-- Right: Buttons -->
+    <div class="right">
+        <!-- Movement Controls -->
+        <div class="controls">
+            <div class="row"><button id="up">UP</button></div>
+            <div class="row"><button id="left">LEFT</button><button id="right">RIGHT</button></div>
+            <div class="row"><button id="down">DOWN</button></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="action-row">
+                <button id="buzzer" class="toggle">Buzzer Alert OFF</button>
+                <button id="flash" class="toggle">Flash Alert OFF</button>
+            </div>
+            <button id="pump">Spray Water</button>
+        </div>
+
+        <!-- Back Button -->
+        <div style="margin-top: 20px;">
+            <button onclick="window.location.href='/'">⬅ Back to Home</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== ESP32 IP =====
+const esp32_ip = "http://10.33.58.150"; // replace with your ESP32 IP
+
+// Movement
+function sendCommand(dir, action){
+    fetch(`${esp32_ip}/move?dir=${dir}&action=${action}`).catch(err => console.log(err));
+}
+function setupButton(btnId, dir){
+    const btn = document.getElementById(btnId);
+    btn.addEventListener("mousedown", () => sendCommand(dir, "start"));
+    btn.addEventListener("mouseup", () => sendCommand(dir, "stop"));
+    btn.addEventListener("mouseleave", () => sendCommand(dir, "stop"));
+    btn.addEventListener("touchstart", e=>{ e.preventDefault(); sendCommand(dir, "start"); });
+    btn.addEventListener("touchend", ()=>sendCommand(dir, "stop"));
+}
+setupButton("up","up");
+setupButton("down","down");
+setupButton("left","left");
+setupButton("right","right");
+
+// Buzzer Toggle
+const buzzerBtn = document.getElementById("buzzer");
+let buzzerOn = false;
+buzzerBtn.addEventListener("click", ()=>{
+    buzzerOn = !buzzerOn;
+    if(buzzerOn){
+        buzzerBtn.textContent="Buzzer Alert ON";
+        buzzerBtn.classList.add("active");
+        fetch(`${esp32_ip}/buzzer?state=on`);
+    } else {
+        buzzerBtn.textContent="Buzzer Alert OFF";
+        buzzerBtn.classList.remove("active");
+        fetch(`${esp32_ip}/buzzer?state=off`);
+    }
+});
+
+// Flash Toggle
+const flashBtn = document.getElementById("flash");
+let flashOn = false;
+flashBtn.addEventListener("click", ()=>{
+    flashOn = !flashOn;
+    if(flashOn){
+        flashBtn.textContent="Flash Alert ON";
+        flashBtn.classList.add("active");
+        fetch(`${esp32_ip}/flash?state=on`);
+    } else {
+        flashBtn.textContent="Flash Alert OFF";
+        flashBtn.classList.remove("active");
+        fetch(`${esp32_ip}/flash?state=off`);
+    }
+});
+
+// Pump Control
+const pumpBtn = document.getElementById("pump");
+pumpBtn.addEventListener("mousedown", ()=>fetch(`${esp32_ip}/pump?state=on`));
+pumpBtn.addEventListener("mouseup", ()=>fetch(`${esp32_ip}/pump?state=off`));
+pumpBtn.addEventListener("mouseleave", ()=>fetch(`${esp32_ip}/pump?state=off`));
+pumpBtn.addEventListener("touchstart", e=>{ e.preventDefault(); fetch(`${esp32_ip}/pump?state=on`); });
+pumpBtn.addEventListener("touchend", ()=>fetch(`${esp32_ip}/pump?state=off`));
+</script>
+
+</body>
+</html>
