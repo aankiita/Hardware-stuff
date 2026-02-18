@@ -182,7 +182,7 @@ Control room notified → Immediate deterrent action triggered.
 To transform public accountability using real-time AI-driven intervention, creating cleaner, safer, and smarter cities for India.
 
 ---
-👩‍💻 Contributions
+#👩‍💻 Contributions
 
 Machine Learning (Detection Model):
 I, along with Abhay Sharma and Ayushman, worked on the ML model for detecting spitting, vandalism, littering, and other public nuisance behaviors.
