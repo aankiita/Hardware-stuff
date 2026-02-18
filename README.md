@@ -195,5 +195,6 @@ Kawin and Dev handled the hardware setup and integration, including:
 Connecting cameras, ESP32, buzzers, servos, and mist/glitter spray mechanisms.
 Ensuring the ML model’s output triggered real-time deterrent actions.
 Developing the embedded control system for smooth workflow between detection and response.
+
 Together, our team combined AI detection and IoT-based response to create a fully functional SAHARA prototype.
 ---
